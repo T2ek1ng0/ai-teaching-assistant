@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert } from 'antd';
+import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Radio, Dropdown } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph as DocxParagraph, HeadingLevel, TextRun } from 'docx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
@@ -49,6 +52,134 @@ const CourseDesignAssistant = () => {
     setLoading(false);
   };
 
+  // 导出为Markdown文件
+  const exportToMarkdown = () => {
+    if (!result) {
+      message.warning('请先生成教学材料');
+      return;
+    }
+
+    const fileName = `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.md`;
+    const content = `# 教学大纲\n\n${result.syllabus}\n\n# 重点难点分析\n\n${result.keyPoints}\n\n# 课后习题建议\n\n${result.exercises}`;
+    
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    saveAs(blob, fileName);
+    message.success('Markdown文件导出成功');
+  };
+
+  // 将Markdown文本转换为简单的纯文本
+  const convertMarkdownToPlainText = (markdown) => {
+    // 简单替换一些常见的Markdown语法
+    return markdown
+      .replace(/#{1,6}\s+/g, '') // 移除标题符号
+      .replace(/\*\*(.*?)\*\*/g, '$1') // 移除粗体
+      .replace(/\*(.*?)\*/g, '$1') // 移除斜体
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 替换链接为纯文本
+      .replace(/```[\s\S]*?```/g, '') // 移除代码块
+      .replace(/`(.*?)`/g, '$1'); // 移除内联代码
+  };
+
+  // 创建段落数组，处理多行文本
+  const createParagraphs = (text, isHeading = false) => {
+    const lines = text.split('\n');
+    return lines.map(line => {
+      if (!line.trim()) return new DocxParagraph({ text: '' }); // 空行
+      
+      if (isHeading) {
+        return new DocxParagraph({
+          text: line,
+          heading: HeadingLevel.HEADING_1,
+        });
+      }
+      
+      return new DocxParagraph({
+        children: [
+          new TextRun({
+            text: line,
+          }),
+        ],
+      });
+    });
+  };
+
+  // 导出为HTML文件（替代Word文档）
+  const exportToHTML = () => {
+    if (!result) {
+      message.warning('请先生成教学材料');
+      return;
+    }
+
+    try {
+      // 创建HTML内容
+      const htmlContent = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程设计</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      color: #005A9C;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #333;
+      margin-top: 20px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>教学大纲</h1>
+  <div id="syllabus">${result.syllabus.replace(/\n/g, '<br>')}</div>
+  
+  <h1>重点难点分析</h1>
+  <div id="keyPoints">${result.keyPoints.replace(/\n/g, '<br>')}</div>
+  
+  <h1>课后习题建议</h1>
+  <div id="exercises">${result.exercises.replace(/\n/g, '<br>')}</div>
+</body>
+</html>
+      `;
+      
+      // 创建Blob并下载
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      saveAs(blob, `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.html`);
+      message.success('HTML文档导出成功');
+    } catch (error) {
+      console.error('导出HTML文档失败:', error);
+      message.error('导出HTML文档失败，请稍后重试');
+    }
+  };
+
+  // 导出菜单项
+  const exportItems = [
+    {
+      key: 'markdown',
+      label: '导出为Markdown',
+      onClick: exportToMarkdown,
+    },
+    {
+      key: 'html',
+      label: '导出为HTML',
+      onClick: exportToHTML,
+    },
+  ];
+
   return (
     <div>
       <Title level={4}>课程设计助手</Title>
@@ -70,9 +201,16 @@ const CourseDesignAssistant = () => {
           <Input placeholder="例如：线性回归, 逻辑回归, 决策树" />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            {loading ? '正在生成...' : '生成教学材料'}
-          </Button>
+          <Space>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              {loading ? '正在生成...' : '生成教学材料'}
+            </Button>
+            {result && (
+              <Dropdown menu={{ items: exportItems }} placement="bottomRight">
+                <Button icon={<DownloadOutlined />}>导出文档</Button>
+              </Dropdown>
+            )}
+          </Space>
         </Form.Item>
       </Form>
 
