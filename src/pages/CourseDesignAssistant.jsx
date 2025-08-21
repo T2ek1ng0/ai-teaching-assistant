@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Radio, Dropdown } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown } from 'antd';
+import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined } from '@ant-design/icons';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph as DocxParagraph, HeadingLevel, TextRun } from 'docx';
+import { marked } from 'marked';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
@@ -102,67 +102,135 @@ const CourseDesignAssistant = () => {
     });
   };
 
-  // 导出为HTML文件（替代Word文档）
-  const exportToHTML = () => {
+  // 直接导出为Word文档
+  const exportToWord = () => {
     if (!result) {
       message.warning('请先生成教学材料');
       return;
     }
 
     try {
-      // 创建HTML内容
-      const htmlContent = `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>课程设计</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    h1 {
-      color: #005A9C;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
-    }
-    h2 {
-      color: #333;
-      margin-top: 20px;
-    }
-    pre {
-      background-color: #f5f5f5;
-      padding: 10px;
-      border-radius: 5px;
-      overflow-x: auto;
-    }
-  </style>
-</head>
-<body>
-  <h1>教学大纲</h1>
-  <div id="syllabus">${result.syllabus.replace(/\n/g, '<br>')}</div>
-  
-  <h1>重点难点分析</h1>
-  <div id="keyPoints">${result.keyPoints.replace(/\n/g, '<br>')}</div>
-  
-  <h1>课后习题建议</h1>
-  <div id="exercises">${result.exercises.replace(/\n/g, '<br>')}</div>
-</body>
-</html>
+      // 使用 marked 将 Markdown 转换为 HTML
+      const syllabusHtml = marked(result.syllabus || '');
+      const keyPointsHtml = marked(result.keyPoints || '');
+      const exercisesHtml = marked(result.exercises || '');
+
+      // 创建一个精美的HTML模板
+      const htmlTemplate = `
+        <div class="section">
+          <h1>教学大纲</h1>
+          <div class="content">${syllabusHtml}</div>
+        </div>
+        <div class="section">
+          <h1>重点难点分析</h1>
+          <div class="content">${keyPointsHtml}</div>
+        </div>
+        <div class="section">
+          <h1>课后习题建议</h1>
+          <div class="content">${exercisesHtml}</div>
+        </div>
+      `;
+
+      // 构建完整的Word文件内容，包含更专业的CSS样式
+      const fullHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office'
+              xmlns:w='urn:schemas-microsoft-com:office:word'
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>课程设计</title>
+          <style>
+            /* --- 通用样式 --- */
+            body {
+              font-family: 'Dengxian', '等线', 'Microsoft YaHei', '微软雅黑', sans-serif;
+              font-size: 12pt;
+              line-height: 1.75;
+              margin: 2.5cm 2cm; /* A4页面边距 */
+            }
+
+            /* --- 章节样式 --- */
+            .section {
+              margin-bottom: 28px;
+              page-break-after: always; /* 每个部分后分页 */
+            }
+            .section:last-child {
+              page-break-after: auto;
+            }
+
+            /* --- 标题样式 --- */
+            h1 {
+              font-size: 22pt;
+              font-weight: bold;
+              color: #2E74B5; /* 深蓝色 */
+              border-bottom: 2px solid #2E74B5;
+              padding-bottom: 8px;
+              margin-bottom: 20px;
+            }
+            h2 {
+              font-size: 16pt;
+              font-weight: bold;
+              color: #333;
+              margin-top: 24px;
+              margin-bottom: 12px;
+            }
+            h3 {
+              font-size: 14pt;
+              font-weight: bold;
+              color: #444;
+              margin-top: 20px;
+              margin-bottom: 10px;
+            }
+
+            /* --- 内容样式 --- */
+            p {
+              margin: 0 0 12px 0;
+              text-align: justify; /* 两端对齐 */
+            }
+            strong, b {
+              font-weight: bold;
+              color: #BF4C15; /* 橙色强调 */
+            }
+            ul, ol {
+              margin-top: 0;
+              margin-bottom: 12px;
+              padding-left: 30px;
+            }
+            li {
+              margin-bottom: 8px;
+            }
+            a {
+              color: #0563C1;
+              text-decoration: none;
+            }
+            a:hover {
+              text-decoration: underline;
+            }
+            pre, code {
+              font-family: 'Consolas', 'Courier New', monospace;
+              background-color: #F3F3F3;
+              border: 1px solid #DDD;
+              border-radius: 4px;
+              padding: 10px;
+              font-size: 10pt;
+              white-space: pre-wrap; /* 自动换行 */
+              word-wrap: break-word;
+            }
+          </style>
+        </head>
+        <body>${htmlTemplate}</body>
+        </html>
       `;
       
-      // 创建Blob并下载
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      saveAs(blob, `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.html`);
-      message.success('HTML文档导出成功');
+      // 创建Blob并使用file-saver下载
+      const blob = new Blob(['\ufeff', fullHtml], {
+        type: 'application/msword'
+      });
+      
+      saveAs(blob, `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.doc`);
+      message.success('Word文档已成功导出！');
     } catch (error) {
-      console.error('导出HTML文档失败:', error);
-      message.error('导出HTML文档失败，请稍后重试');
+      console.error('导出Word文档时出错:', error);
+      message.error('导出Word文档失败，请查看控制台获取更多信息。');
     }
   };
 
@@ -171,12 +239,14 @@ const CourseDesignAssistant = () => {
     {
       key: 'markdown',
       label: '导出为Markdown',
+      icon: <FileMarkdownOutlined />,
       onClick: exportToMarkdown,
     },
     {
-      key: 'html',
-      label: '导出为HTML',
-      onClick: exportToHTML,
+      key: 'word',
+      label: '导出为Word',
+      icon: <FileWordOutlined />,
+      onClick: exportToWord,
     },
   ];
 
