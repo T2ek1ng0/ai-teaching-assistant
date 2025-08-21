@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown } from 'antd';
-import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined } from '@ant-design/icons';
+import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined, CopyOutlined } from '@ant-design/icons';
 import { saveAs } from 'file-saver';
 import { marked } from 'marked';
 import ReactMarkdown from 'react-markdown';
@@ -26,6 +26,7 @@ const CourseDesignAssistant = () => {
   "syllabus": "一个详细的、分章节的教学大纲，使用Markdown格式。",
   "keyPoints": "课程的重点和难点分析，使用Markdown格式。",
   "exercises": "3-5个相关的课后习题建议，使用Markdown格式。",
+  "keyFormulas": "提取课程中的核心公式，以LaTeX数组格式提供，例如：[\\"E=mc^2\\", \\"F=ma\\"]。",
   "fullCourseDesign": "一份完整的课程设计文档，包含课程简介、教学目标、教学安排、考核方式和教学资源，使用Markdown格式。"
 }`;
 
@@ -51,6 +52,15 @@ const CourseDesignAssistant = () => {
     }
 
     setLoading(false);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      message.success('已成功复制到剪贴板');
+    }, (err) => {
+      message.error('复制失败');
+      console.error('Could not copy text: ', err);
+    });
   };
 
   // 导出为Markdown文件
@@ -303,25 +313,51 @@ const CourseDesignAssistant = () => {
       
       <Spin spinning={loading} tip="AI 正在努力生成中..." size="large">
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Card title="完整课程设计">
+          <Card title="完整课程设计" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {result?.fullCourseDesign || '这里将显示生成的完整课程设计...'}
             </ReactMarkdown>
           </Card>
-          <Card title="教学大纲">
+          <Card title="教学大纲" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {result?.syllabus || '这里将显示生成的教学大纲...'}
             </ReactMarkdown>
           </Card>
-          <Card title="重点难点分析">
+          <Card title="重点难点分析" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {result?.keyPoints || '这里将显示生成的重点难点分析...'}
             </ReactMarkdown>
           </Card>
-          <Card title="课后习题建议">
+          <Card title="课后习题建议" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {result?.exercises || '这里将显示生成的课后习题建议...'}
             </ReactMarkdown>
+          </Card>
+          <Card
+            title="重点公式"
+            bordered={true}
+            style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }}
+            headStyle={{ color: '#2E74B5' }}
+            extra={
+              result?.keyFormulas && (
+                <Button
+                  icon={<CopyOutlined />}
+                  onClick={() => copyToClipboard(result.keyFormulas.join('\n'))}
+                >
+                  复制LaTeX
+                </Button>
+              )
+            }
+          >
+            {result?.keyFormulas ? (
+              <ul>
+                {result.keyFormulas.map((formula, index) => (
+                  <li key={index}>{`$$${formula}$$`}</li>
+                ))}
+              </ul>
+            ) : (
+              '这里将显示生成的重点公式...'
+            )}
           </Card>
         </Space>
       </Spin>
