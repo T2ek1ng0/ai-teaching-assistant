@@ -67,7 +67,7 @@ const CourseSelfLearningAssistant = () => {
           label="关键词"
           rules={[{ required: true, message: '请输入关键词!' }]}
         >
-          <Input placeholder="例如：Pandas, NumPy, Matplotlib" />
+          <Input placeholder="例如：Pandas, NumPy, 如没有可以填空格" />
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>

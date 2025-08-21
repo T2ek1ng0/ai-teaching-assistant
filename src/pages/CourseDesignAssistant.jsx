@@ -293,7 +293,7 @@ const CourseDesignAssistant = () => {
           label="关键词"
           rules={[{ required: true, message: '请输入关键词!' }]}
         >
-          <Input placeholder="例如：线性回归, 逻辑回归, 决策树" />
+          <Input placeholder="例如：线性回归, 逻辑回归, 如没有可以填空格" />
         </Form.Item>
         <Form.Item>
           <Space>
