@@ -25,7 +25,8 @@ const CourseDesignAssistant = () => {
 {
   "syllabus": "一个详细的、分章节的教学大纲，使用Markdown格式。",
   "keyPoints": "课程的重点和难点分析，使用Markdown格式。",
-  "exercises": "3-5个相关的课后习题建议，使用Markdown格式。"
+  "exercises": "3-5个相关的课后习题建议，使用Markdown格式。",
+  "fullCourseDesign": "一份完整的课程设计文档，包含课程简介、教学目标、教学安排、考核方式和教学资源，使用Markdown格式。"
 }`;
 
     const userPrompt = `课程主题: ${values.topic}\n关键词: ${values.keywords}`;
@@ -60,7 +61,11 @@ const CourseDesignAssistant = () => {
     }
 
     const fileName = `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.md`;
-    const content = `# 教学大纲\n\n${result.syllabus}\n\n# 重点难点分析\n\n${result.keyPoints}\n\n# 课后习题建议\n\n${result.exercises}`;
+    let content = '';
+    if (result.fullCourseDesign) {
+      content += `# 完整课程设计\n\n${result.fullCourseDesign}\n\n`;
+    }
+    content += `# 教学大纲\n\n${result.syllabus}\n\n# 重点难点分析\n\n${result.keyPoints}\n\n# 课后习题建议\n\n${result.exercises}`;
     
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
     saveAs(blob, fileName);
@@ -111,12 +116,22 @@ const CourseDesignAssistant = () => {
 
     try {
       // 使用 marked 将 Markdown 转换为 HTML
+      const fullDesignHtml = marked(result.fullCourseDesign || '');
       const syllabusHtml = marked(result.syllabus || '');
       const keyPointsHtml = marked(result.keyPoints || '');
       const exercisesHtml = marked(result.exercises || '');
 
       // 创建一个精美的HTML模板
-      const htmlTemplate = `
+      let htmlTemplate = '';
+      if (result.fullCourseDesign) {
+        htmlTemplate += `
+        <div class="section">
+          <h1>完整课程设计</h1>
+          <div class="content">${fullDesignHtml}</div>
+        </div>
+        `;
+      }
+      htmlTemplate += `
         <div class="section">
           <h1>教学大纲</h1>
           <div class="content">${syllabusHtml}</div>
@@ -288,6 +303,11 @@ const CourseDesignAssistant = () => {
       
       <Spin spinning={loading} tip="AI 正在努力生成中..." size="large">
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Card title="完整课程设计">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {result?.fullCourseDesign || '这里将显示生成的完整课程设计...'}
+            </ReactMarkdown>
+          </Card>
           <Card title="教学大纲">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {result?.syllabus || '这里将显示生成的教学大纲...'}
