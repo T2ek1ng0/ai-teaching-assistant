@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Layout, Menu, ConfigProvider, Typography } from 'antd';
-import { DesktopOutlined, FileTextOutlined, MessageOutlined, SettingOutlined } from '@ant-design/icons';
 
 import CourseDesignAssistant from './pages/CourseDesignAssistant';
+import CourseSelfLearningAssistant from './pages/CourseSelfLearningAssistant';
 import AssignmentGrader from './pages/AssignmentGrader';
 import Chatbot from './pages/Chatbot';
 import Settings from './pages/Settings';
+import MemoryManager from './pages/MemoryManager';
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Title } = Typography;
@@ -18,11 +19,15 @@ const App = () => {
       case '1':
         return <CourseDesignAssistant />;
       case '2':
-        return <AssignmentGrader />;
+        return <CourseSelfLearningAssistant />;
       case '3':
-        return <Chatbot />;
+        return <AssignmentGrader />;
       case '4':
+        return <Chatbot />;
+      case '5':
         return <Settings />;
+      case '6':
+        return <MemoryManager />;
       default:
         return <CourseDesignAssistant />;
     }
@@ -45,17 +50,23 @@ const App = () => {
             mode="inline"
             onClick={(e) => setSelectedKey(e.key)}
           >
-            <Menu.Item key="1" icon={<DesktopOutlined />}>
+            <Menu.Item key="1">
               课程设计助手
             </Menu.Item>
-            <Menu.Item key="2" icon={<FileTextOutlined />}>
+            <Menu.Item key="2">
+              课程预习/自学助手
+            </Menu.Item>
+            <Menu.Item key="3">
               作业智能批改
             </Menu.Item>
-            <Menu.Item key="3" icon={<MessageOutlined />}>
+            <Menu.Item key="4">
               智能答疑机器人
             </Menu.Item>
-            <Menu.Item key="4" icon={<SettingOutlined />}>
+            <Menu.Item key="5">
               API 设置
+            </Menu.Item>
+            <Menu.Item key="6">
+              记忆管理
             </Menu.Item>
           </Menu>
         </Sider>

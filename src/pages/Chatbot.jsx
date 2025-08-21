@@ -4,6 +4,7 @@ import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
+import { supabase } from '../utils/supabase';
 import './Chatbot.css';
 
 const { Paragraph, Title } = Typography;
@@ -40,19 +41,37 @@ const Chatbot = () => {
       const userMessage = { sender: 'user', text: inputValue };
       const updatedMessages = [...messages, userMessage];
       setMessages(updatedMessages);
+      const currentInput = inputValue;
       setInputValue('');
       setLoading(true);
 
-      const systemPrompt = {
-        role: 'system',
-        content: '你是一个乐于助人、知识渊博的AI助教，请用友好、清晰、简洁的语言回答学生关于课程内容的问题。'
-      };
+      // 1. 从 Supabase 获取相关记忆
+      const { data: memories, error: memoriesError } = await supabase
+        .from('memories')
+        .select('question, answer')
+        .ilike('question', `%${currentInput}%`); // 使用 ilike 进行模糊搜索
+
+      if (memoriesError) {
+        console.error("Error fetching memories:", memoriesError);
+      }
+
+      // 2. 构建带有记忆上下文的 System Prompt
+      let systemContent = '你是一个乐于助人、知识渊博的AI助教，请用友好、清晰、简洁的语言回答学生关于课程内容的问题。';
+      if (memories && memories.length > 0) {
+        const memoryContext = memories
+          .map(m => `已知信息：\n- 问题: ${m.question}\n- 答案: ${m.answer}`)
+          .join('\n\n');
+        systemContent += `\n\n请参考以下已经存储的知识来回答问题。如果问题与已知信息高度相关，请优先使用这些知识进行回答：\n${memoryContext}`;
+      }
+      
+      const systemPrompt = { role: 'system', content: systemContent };
       
       const apiMessages = updatedMessages.map(msg => ({
         role: msg.sender === 'bot' ? 'assistant' : 'user',
         content: msg.text
       }));
 
+      // 3. 调用 LLM
       const llmResponse = await callLLM([systemPrompt, ...apiMessages]);
 
       if (llmResponse.success) {
