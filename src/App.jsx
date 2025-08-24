@@ -1,89 +1,55 @@
-import React, { useState } from 'react';
-import { Layout, Menu, ConfigProvider, Typography } from 'antd';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Layout, ConfigProvider } from 'antd';
 
+import NavBar from './components/NavBar';
+import FloatingBot from './components/FloatingBot';
+import HomePage from './pages/HomePage';
+import Guide from './pages/Guide';
 import CourseDesignAssistant from './pages/CourseDesignAssistant';
 import CourseSelfLearningAssistant from './pages/CourseSelfLearningAssistant';
 import AssignmentGrader from './pages/AssignmentGrader';
 import Chatbot from './pages/Chatbot';
 import Settings from './pages/Settings';
 import MemoryManager from './pages/MemoryManager';
+import AboutUs from './pages/AboutUs';
 
-const { Header, Content, Footer, Sider } = Layout;
-const { Title } = Typography;
+const { Content, Footer } = Layout;
 
 const App = () => {
-  const [selectedKey, setSelectedKey] = useState('1');
-
-  const renderContent = () => {
-    switch (selectedKey) {
-      case '1':
-        return <CourseDesignAssistant />;
-      case '2':
-        return <CourseSelfLearningAssistant />;
-      case '3':
-        return <AssignmentGrader />;
-      case '4':
-        return <Chatbot />;
-      case '5':
-        return <Settings />;
-      case '6':
-        return <MemoryManager />;
-      default:
-        return <CourseDesignAssistant />;
-    }
-  };
-
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#005A9C', // SCUT Blue
+          colorPrimary: '#005A9C',
         },
       }}
     >
-      <Layout style={{ minHeight: '100vh' }}>
-        <Sider collapsible>
-          <div style={{ height: '32px', margin: '16px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px' }} />
-          <Menu 
-            theme="dark" 
-            selectedKeys={[selectedKey]} 
-            mode="inline"
-            onClick={(e) => setSelectedKey(e.key)}
-          >
-            <Menu.Item key="1">
-              课程设计助手
-            </Menu.Item>
-            <Menu.Item key="2">
-              课程预习/自学助手
-            </Menu.Item>
-            <Menu.Item key="3">
-              作业智能批改
-            </Menu.Item>
-            <Menu.Item key="4">
-              智能答疑机器人
-            </Menu.Item>
-            <Menu.Item key="5">
-              API 设置
-            </Menu.Item>
-            <Menu.Item key="6">
-              记忆管理
-            </Menu.Item>
-          </Menu>
-        </Sider>
-        <Layout>
-          <Header style={{ background: '#fff', padding: '0 24px' }}>
-            <Title level={3} style={{ margin: '16px 0' }}>AI 助教系统</Title>
-          </Header>
-          <Content style={{ margin: '24px 16px 0' }}>
-            <div style={{ padding: 24, background: '#fff', minHeight: 360 }}>
-              {renderContent()}
+      <Router basename="/ai-teaching-assistant">
+        <Layout style={{ minHeight: '100vh' }}>
+          <NavBar />
+          <Content style={{ padding: '24px', background: '#f0f2f5' }}>
+            <div style={{ background: '#fff', padding: 24, minHeight: 'calc(100vh - 134px)' }}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/guide" element={<Guide />} />
+                <Route path="/course-design" element={<CourseDesignAssistant />} />
+                <Route path="/grade-assignments" element={<AssignmentGrader />} />
+                <Route path="/course-preview" element={<CourseSelfLearningAssistant />} />
+                <Route path="/self-learning" element={<CourseSelfLearningAssistant />} />
+                <Route path="/chatbot" element={<Chatbot />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/memory-management" element={<MemoryManager />} />
+                <Route path="/about-us" element={<AboutUs />} />
+              </Routes>
             </div>
           </Content>
+          <FloatingBot />
           <Footer style={{ textAlign: 'center' }}>
             AI Teaching Assistant ©2024 Created by CodeBuddy
           </Footer>
         </Layout>
-      </Layout>
+      </Router>
     </ConfigProvider>
   );
 };
