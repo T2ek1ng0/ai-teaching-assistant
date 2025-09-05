@@ -3,6 +3,7 @@ import { Upload, Button, Card, Typography, message, Spin, Space, Alert } from 'a
 import { UploadOutlined, RedoOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import mammoth from 'mammoth';
 import { callLLM } from '../utils/llm';
 
 const { Title, Paragraph } = Typography;
@@ -19,10 +20,51 @@ const AssignmentGrader = () => {
     setError(null);
   };
 
+  const gradeContent = async (fileContent) => {
+    const MAX_LENGTH = 8000;
+    let processedContent = fileContent;
+
+    if (fileContent.length > MAX_LENGTH) {
+      const half = MAX_LENGTH / 2;
+      processedContent =
+        fileContent.substring(0, half) +
+        `\n\n... (内容过长，已截断中间部分) ...\n\n` +
+        fileContent.substring(fileContent.length - half);
+      message.warning('作业内容过长，AI将只分析开头和结尾部分。');
+    }
+
+    const systemPrompt = `你是一位经验丰富的助教，负责批改学生作业。请根据作业内容，给出一个评分和评语。作业内容如果被截断，请在评语中说明。
+你的回答必须遵循以下JSON格式，不要添加任何额外的解释或说明文字：
+{
+  "score": "一个百分制的分数，例如 '85/100'。",
+  "comments": "一段详细的评语，包括优点、可改进之处和综合评价，使用Markdown格式。"
+}`;
+    const userPrompt = `请批改这份作业的内容：\n\n${processedContent}`;
+
+    const llmResponse = await callLLM([
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ]);
+
+    if (llmResponse.success) {
+      try {
+        const parsedResult = JSON.parse(llmResponse.data);
+        setResult(parsedResult);
+      } catch (e) {
+        const errorMsg = "AI返回的数据格式不正确，无法解析。";
+        setError(errorMsg);
+        message.error(errorMsg);
+      }
+    } else {
+      setError(llmResponse.error);
+      message.error(llmResponse.error);
+    }
+    setLoading(false);
+  };
+
   const props = {
     name: 'file',
     customRequest: ({ onSuccess }) => {
-      // Simulate a successful upload immediately without sending the file
       setTimeout(() => {
         onSuccess("ok");
       }, 0);
@@ -36,7 +78,7 @@ const AssignmentGrader = () => {
       setCurrentFile(file);
       return true;
     },
-    onChange: async (info) => {
+    onChange: (info) => {
       if (info.file.status === 'uploading') {
         setLoading(true);
         setResult(null);
@@ -44,35 +86,39 @@ const AssignmentGrader = () => {
         return;
       }
       if (info.file.status === 'done') {
-        message.success(`《${info.file.name}》上传成功，AI正在批改中...`);
+        message.success(`《${info.file.name}》上传成功，AI正在读取并批改中...`);
+        const file = info.file.originFileObj;
 
-        const systemPrompt = `你是一位经验丰富的助教，负责批改学生作业。请根据作业文件名，给出一个评分和评语。
-你的回答必须遵循以下JSON格式，不要添加任何额外的解释或说明文字：
-{
-  "score": "一个百分制的分数，例如 '85/100'。",
-  "comments": "一段详细的评语，包括优点、可改进之处和综合评价，使用Markdown格式。"
-}`;
-        const userPrompt = `请批改这份作业：${info.file.name}`;
+        const handleError = (errorMsg) => {
+          setError(errorMsg);
+          message.error(errorMsg);
+          setLoading(false);
+        };
 
-        const llmResponse = await callLLM([
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ]);
-
-        if (llmResponse.success) {
-          try {
-            const parsedResult = JSON.parse(llmResponse.data);
-            setResult(parsedResult);
-          } catch (e) {
-            const errorMsg = "AI返回的数据格式不正确，无法解析。";
-            setError(errorMsg);
-            message.error(errorMsg);
-          }
+        if (file.name.endsWith('.docx')) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const arrayBuffer = e.target.result;
+            try {
+              const mammothResult = await mammoth.extractRawText({ arrayBuffer });
+              await gradeContent(mammothResult.value);
+            } catch (err) {
+              console.error("Error reading docx file:", err);
+              handleError(`解析 .docx 文件《${file.name}》失败。`);
+            }
+          };
+          reader.onerror = () => handleError(`读取文件《${file.name}》失败。`);
+          reader.readAsArrayBuffer(file);
+        } else if (file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            await gradeContent(e.target.result);
+          };
+          reader.onerror = () => handleError(`读取文件《${file.name}》失败。`);
+          reader.readAsText(file, 'UTF-8');
         } else {
-          setError(llmResponse.error);
-          message.error(llmResponse.error);
+          handleError(`不支持的文件类型：${file.name}。请上传 .docx, .txt, 或 .md 文件。`);
         }
-        setLoading(false);
       } else if (info.file.status === 'error') {
         const errorMsg = `《${info.file.name}》文件上传失败.`;
         setError(errorMsg);
@@ -85,7 +131,7 @@ const AssignmentGrader = () => {
   return (
     <div>
       <Title level={4}>作业智能批改</Title>
-      <Paragraph>请上传学生作业文件（如 .docx, .pdf），AI 将根据预设标准进行初步评分和给出评语。</Paragraph>
+      <Paragraph>请上传学生作业文件（如 .docx, .txt, .md），AI 将根据作业内容进行初步评分和给出评语。</Paragraph>
       
       {error && <Alert message="错误" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
 
