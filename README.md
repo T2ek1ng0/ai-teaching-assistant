@@ -31,6 +31,7 @@ AI 教学助手是一个基于现代前端技术构建的教学辅助系统，�
 ```
 
 主语言：JavaScript、CSS、HTML 
+
 贡献者：Gao Zijian、Zhou Jiatai
 
 ## 本地开发指南
