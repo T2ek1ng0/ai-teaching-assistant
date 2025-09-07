@@ -64,3 +64,11 @@ AI 教学助手是一个基于现代前端技术构建的教学辅助系统，�
 - **样式**：CSS
 - **代码规范**：ESLint（eslint.config.js）
 - **环境配置**：.env 文件（敏感配置）
+
+## 如何获取免费API
+1. 打开https://bailian.console.aliyun.com/?spm=a2c4g.11186623.0.0.53f0657brw3gZa&tab=app#/app-market/newTemplate并登陆账号
+2. 选择应用-应用管理-创建应用，创建智能体应用
+3. 点击API配置栏的设置，模型选择限免的通义千问2.5-1.5B，参数配置随意
+4. 点击发布-确认发布，进入发布渠道，在调用方式那里创建API，创建API key
+5. 回到助教系统，在设置-API配置中
+   API Base URL填入https://dashscope.aliyuncs.com/compatible-mode/v1，API Key填入刚创建的key
