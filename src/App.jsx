@@ -13,6 +13,7 @@ import Chatbot from './pages/Chatbot';
 import Settings from './pages/Settings';
 import MemoryManager from './pages/MemoryManager';
 import AboutUs from './pages/AboutUs';
+import QuestionBank from './pages/QuestionBank/QuestionBank';
 
 const { Content, Footer } = Layout;
 
@@ -41,6 +42,7 @@ const App = () => {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/memory-management" element={<MemoryManager />} />
                 <Route path="/about-us" element={<AboutUs />} />
+                <Route path="/question-bank" element={<QuestionBank />} />
               </Routes>
             </div>
           </Content>

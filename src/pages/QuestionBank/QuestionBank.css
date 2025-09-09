@@ -1,0 +1,185 @@
+.question-bank-page {
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f6f8;
+    min-height: 100vh;
+}
+
+.question-bank-page h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.bank-selection {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.bank-category {
+    text-align: center;
+}
+
+.bank-category h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.bank-category button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #fff;
+    color: #007bff;
+    border: 1px solid #007bff;
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.bank-category button:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.questions-display-area {
+    margin-top: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.initial-prompt {
+    text-align: center;
+    font-size: 1.2em;
+    color: #888;
+    margin-top: 50px;
+}
+
+.question-container {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.question-container:hover {
+    transform: translateY(-3px);
+}
+
+.question-container h4 {
+    margin-top: 0;
+    color: #333;
+}
+
+.options-container {
+    margin-top: 15px;
+}
+
+.option-button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px;
+    text-align: left;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    font-size: 16px;
+}
+
+.option-button:hover:not(:disabled) {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+.option-button.selected {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+}
+
+.option-button.correct {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    font-weight: bold;
+}
+
+.option-button.incorrect {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    font-weight: bold;
+}
+
+.option-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.reason-container {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+    color: #856404;
+}
+
+.reason-container.correct-answer {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.reason-container p {
+    margin: 0;
+}
+
+.action-buttons {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.submit-btn, .redo-btn {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.submit-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.submit-btn:disabled {
+    background-color: #a0cfff;
+    cursor: not-allowed;
+}
+
+.redo-btn {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.redo-btn:hover {
+    background-color: #e0a800;
+}

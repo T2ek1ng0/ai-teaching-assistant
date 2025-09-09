@@ -14,6 +14,7 @@ const studentMenuItems = [
   { key: '1', label: <Link to="/course-preview">课程预习</Link> },
   { key: '2', label: <Link to="/self-learning">自学助手</Link> },
   { key: '3', label: <Link to="/chatbot">智能答疑机器人</Link> },
+  { key: '4', label: <Link to="/question-bank">题库中心</Link> },
 ];
 
 const settingsMenuItems = [
