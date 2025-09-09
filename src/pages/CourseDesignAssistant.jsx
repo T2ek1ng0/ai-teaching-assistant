@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown, Avatar } from 'antd';
-import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined, CopyOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown, Avatar, Row, Col } from 'antd';
+import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined, CopyOutlined, BookOutlined, BulbOutlined, ExperimentOutlined, CodeOutlined, FileTextOutlined } from '@ant-design/icons';
 import { saveAs } from 'file-saver';
 import { marked } from 'marked';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
 import defaultImage from '../assets/default.jpg';
+import './CourseDesignAssistant.css';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const CourseDesignAssistant = () => {
   const [loading, setLoading] = useState(false);
@@ -21,17 +22,9 @@ const CourseDesignAssistant = () => {
     setResult(null);
     setError(null);
 
-    const systemPrompt = `你是一位顶级的教学设计师，专门为大学教师设计课程。请根据用户提供的课程主题和关键词，生成一份详细的教学材料。
-你的回答必须遵循以下JSON格式，不要添加任何额外的解释或说明文字：
-{
-  "syllabus": "一个详细的、分章节的教学大纲，使用Markdown格式。",
-  "keyPoints": "课程的重点和难点分析，使用Markdown格式。",
-  "exercises": "3-5个相关的课后习题建议，使用Markdown格式。",
-  "keyFormulas": "提取课程中的核心公式，以LaTeX数组格式提供，例如：[\\"E=mc^2\\", \\"F=ma\\"]。",
-  "fullCourseDesign": "一份完整的课程设计文档，包含课程简介、教学目标、教学安排、考核方式和教学资源，使用Markdown格式。"
-}`;
+    const systemPrompt = `你是一位顶级的教学设计师，专门为大学教师设计课程。请根据用户提供的课程主题和关键词，生成一份详细的教学材料。\n你的回答必须遵循以下JSON格式，不要添加任何额外的解释或说明文字：\n{\n  \"syllabus\": \"一个详细的、分章节的教学大纲，使用Markdown格式。\",\n  \"keyPoints\": \"课程的重点和难点分析，使用Markdown格式。\",\n  \"exercises\": \"3-5个相关的课后习题建议，使用Markdown格式。\",\n  \"keyFormulas\": \"提取课程中的核心公式，以LaTeX数组格式提供，例如：[\\\\\"E=mc^2\\\\\", \\\\\"F=ma\\\\\"]。\",\n  \"fullCourseDesign\": \"一份完整的课程设计文档，包含课程简介、教学目标、教学安排、考核方式和教学资源，使用Markdown格式。\"\n}`;
 
-    const userPrompt = `课程主题: ${values.topic}\n关键词: ${values.keywords}`;
+    const userPrompt = `课程主题: ${values.topic}\n关键词: ${values.keywords || ''}`;
 
     const llmResponse = await callLLM([
       { role: 'system', content: systemPrompt },
@@ -42,6 +35,7 @@ const CourseDesignAssistant = () => {
       try {
         const parsedResult = JSON.parse(llmResponse.data);
         setResult(parsedResult);
+        message.success('课程设计已生成！');
       } catch (e) {
         console.error("Failed to parse LLM response:", e);
         setError("AI返回的数据格式不正确，无法解析。请稍后重试。");
@@ -64,7 +58,6 @@ const CourseDesignAssistant = () => {
     });
   };
 
-  // 导出为Markdown文件
   const exportToMarkdown = () => {
     if (!result) {
       message.warning('请先生成教学材料');
@@ -83,42 +76,6 @@ const CourseDesignAssistant = () => {
     message.success('Markdown文件导出成功');
   };
 
-  // 将Markdown文本转换为简单的纯文本
-  const convertMarkdownToPlainText = (markdown) => {
-    // 简单替换一些常见的Markdown语法
-    return markdown
-      .replace(/#{1,6}\s+/g, '') // 移除标题符号
-      .replace(/\*\*(.*?)\*\*/g, '$1') // 移除粗体
-      .replace(/\*(.*?)\*/g, '$1') // 移除斜体
-      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 替换链接为纯文本
-      .replace(/```[\s\S]*?```/g, '') // 移除代码块
-      .replace(/`(.*?)`/g, '$1'); // 移除内联代码
-  };
-
-  // 创建段落数组，处理多行文本
-  const createParagraphs = (text, isHeading = false) => {
-    const lines = text.split('\n');
-    return lines.map(line => {
-      if (!line.trim()) return new DocxParagraph({ text: '' }); // 空行
-      
-      if (isHeading) {
-        return new DocxParagraph({
-          text: line,
-          heading: HeadingLevel.HEADING_1,
-        });
-      }
-      
-      return new DocxParagraph({
-        children: [
-          new TextRun({
-            text: line,
-          }),
-        ],
-      });
-    });
-  };
-
-  // 直接导出为Word文档
   const exportToWord = () => {
     if (!result) {
       message.warning('请先生成教学材料');
@@ -126,13 +83,11 @@ const CourseDesignAssistant = () => {
     }
 
     try {
-      // 使用 marked 将 Markdown 转换为 HTML
       const fullDesignHtml = marked(result.fullCourseDesign || '');
       const syllabusHtml = marked(result.syllabus || '');
       const keyPointsHtml = marked(result.keyPoints || '');
       const exercisesHtml = marked(result.exercises || '');
 
-      // 创建一个精美的HTML模板
       let htmlTemplate = '';
       if (result.fullCourseDesign) {
         htmlTemplate += `
@@ -157,7 +112,6 @@ const CourseDesignAssistant = () => {
         </div>
       `;
 
-      // 构建完整的Word文件内容，包含更专业的CSS样式
       const fullHtml = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office'
               xmlns:w='urn:schemas-microsoft-com:office:word'
@@ -166,92 +120,31 @@ const CourseDesignAssistant = () => {
           <meta charset='utf-8'>
           <title>课程设计</title>
           <style>
-            /* --- 通用样式 --- */
             body {
               font-family: 'Dengxian', '等线', 'Microsoft YaHei', '微软雅黑', sans-serif;
               font-size: 12pt;
               line-height: 1.75;
-              margin: 2.5cm 2cm; /* A4页面边距 */
+              margin: 2.5cm 2cm;
             }
-
-            /* --- 章节样式 --- */
-            .section {
-              margin-bottom: 28px;
-              page-break-after: always; /* 每个部分后分页 */
-            }
-            .section:last-child {
-              page-break-after: auto;
-            }
-
-            /* --- 标题样式 --- */
-            h1 {
-              font-size: 22pt;
-              font-weight: bold;
-              color: #2E74B5; /* 深蓝色 */
-              border-bottom: 2px solid #2E74B5;
-              padding-bottom: 8px;
-              margin-bottom: 20px;
-            }
-            h2 {
-              font-size: 16pt;
-              font-weight: bold;
-              color: #333;
-              margin-top: 24px;
-              margin-bottom: 12px;
-            }
-            h3 {
-              font-size: 14pt;
-              font-weight: bold;
-              color: #444;
-              margin-top: 20px;
-              margin-bottom: 10px;
-            }
-
-            /* --- 内容样式 --- */
-            p {
-              margin: 0 0 12px 0;
-              text-align: justify; /* 两端对齐 */
-            }
-            strong, b {
-              font-weight: bold;
-              color: #BF4C15; /* 橙色强调 */
-            }
-            ul, ol {
-              margin-top: 0;
-              margin-bottom: 12px;
-              padding-left: 30px;
-            }
-            li {
-              margin-bottom: 8px;
-            }
-            a {
-              color: #0563C1;
-              text-decoration: none;
-            }
-            a:hover {
-              text-decoration: underline;
-            }
-            pre, code {
-              font-family: 'Consolas', 'Courier New', monospace;
-              background-color: #F3F3F3;
-              border: 1px solid #DDD;
-              border-radius: 4px;
-              padding: 10px;
-              font-size: 10pt;
-              white-space: pre-wrap; /* 自动换行 */
-              word-wrap: break-word;
-            }
+            .section { margin-bottom: 28px; page-break-after: always; }
+            .section:last-child { page-break-after: auto; }
+            h1 { font-size: 22pt; font-weight: bold; color: #2E74B5; border-bottom: 2px solid #2E74B5; padding-bottom: 8px; margin-bottom: 20px; }
+            h2 { font-size: 16pt; font-weight: bold; color: #333; margin-top: 24px; margin-bottom: 12px; }
+            h3 { font-size: 14pt; font-weight: bold; color: #444; margin-top: 20px; margin-bottom: 10px; }
+            p { margin: 0 0 12px 0; text-align: justify; }
+            strong, b { font-weight: bold; color: #BF4C15; }
+            ul, ol { margin-top: 0; margin-bottom: 12px; padding-left: 30px; }
+            li { margin-bottom: 8px; }
+            a { color: #0563C1; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            pre, code { font-family: 'Consolas', 'Courier New', monospace; background-color: #F3F3F3; border: 1px solid #DDD; border-radius: 4px; padding: 10px; font-size: 10pt; white-space: pre-wrap; word-wrap: break-word; }
           </style>
         </head>
         <body>${htmlTemplate}</body>
         </html>
       `;
       
-      // 创建Blob并使用file-saver下载
-      const blob = new Blob(['\ufeff', fullHtml], {
-        type: 'application/msword'
-      });
-      
+      const blob = new Blob(['\ufeff', fullHtml], { type: 'application/msword' });
       saveAs(blob, `课程设计_${new Date().toLocaleDateString().replace(/\//g, '-')}.doc`);
       message.success('Word文档已成功导出！');
     } catch (error) {
@@ -260,113 +153,91 @@ const CourseDesignAssistant = () => {
     }
   };
 
-  // 导出菜单项
   const exportItems = [
-    {
-      key: 'markdown',
-      label: '导出为Markdown',
-      icon: <FileMarkdownOutlined />,
-      onClick: exportToMarkdown,
-    },
-    {
-      key: 'word',
-      label: '导出为Word',
-      icon: <FileWordOutlined />,
-      onClick: exportToWord,
-    },
+    { key: 'markdown', label: '导出为Markdown', icon: <FileMarkdownOutlined />, onClick: exportToMarkdown },
+    { key: 'word', label: '导出为Word', icon: <FileWordOutlined />, onClick: exportToWord },
   ];
 
-  return (
-    <div>
-      <Space align="center" size="large" style={{ marginBottom: 24, display: 'flex' }}>
-        <Avatar size={80} src={defaultImage} />
-        <div>
-          <Title level={4} style={{ margin: 0 }}>知书达鲤 - 课程设计助手</Title>
-          <Paragraph style={{ margin: 0, marginTop: 4 }}>请输入课程主题和关键词，“鲤工仔”将为您生成教学大纲、重点难点分析和课后习题建议。</Paragraph>
+  const renderResultCard = (title, icon, content, placeholder, extra = null) => (
+    <Card title={<Space>{icon}{title}</Space>} bordered={false} className="result-card" extra={extra}>
+      {content ? (
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      ) : (
+        <div className="placeholder-content">
+          <Text type="secondary">{placeholder}</Text>
         </div>
-      </Space>
-      
-      <Form onFinish={onFinish} layout="vertical">
-        <Form.Item
-          name="topic"
-          label="课程主题"
-          rules={[{ required: true, message: '请输入课程主题!' }]}
-        >
-          <Input placeholder="例如：机器学习入门" />
-        </Form.Item>
-        <Form.Item
-          name="keywords"
-          label="关键词"
-          rules={[{ required: true, message: '请输入关键词!' }]}
-        >
-          <Input placeholder="例如：线性回归, 逻辑回归, 如没有可以填空格" />
-        </Form.Item>
-        <Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {loading ? '正在生成...' : '生成教学材料'}
-            </Button>
-            {result && (
-              <Dropdown menu={{ items: exportItems }} placement="bottomRight">
-                <Button icon={<DownloadOutlined />}>导出文档</Button>
-              </Dropdown>
-            )}
-          </Space>
-        </Form.Item>
-      </Form>
+      )}
+    </Card>
+  );
 
-      {error && <Alert message="错误" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
+  return (
+    <div className="course-design-assistant-container">
+      <div className="header-section">
+        <Avatar size={80} src={defaultImage} />
+        <div className="header-text">
+          <Title level={3} style={{ margin: 0 }}>知书达鲤 - 课程设计助手</Title>
+          <Paragraph style={{ margin: 0, marginTop: 8 }}>
+            只需输入课程主题和关键词，AI 将为您精心打造一份完整的教学设计方案，涵盖教学大纲、重点难点、课后习题等，助您高效备课。
+          </Paragraph>
+        </div>
+      </div>
       
-      <Spin spinning={loading} tip="AI 正在努力生成中..." size="large">
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <Card title="完整课程设计" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {result?.fullCourseDesign || '这里将显示生成的完整课程设计...'}
-            </ReactMarkdown>
+      <Row gutter={32}>
+        <Col xs={24} md={8}>
+          <Card title="课程信息输入" bordered={false} className="form-card">
+            <Form onFinish={onFinish} layout="vertical">
+              <Form.Item name="topic" label="课程主题" rules={[{ required: true, message: '请输入课程主题!' }]}>
+                <Input placeholder="例如：机器学习入门" />
+              </Form.Item>
+              <Form.Item name="keywords" label="关键词 (可选)" help="多个关键词请用逗号分隔">
+                <Input placeholder="例如：线性回归, 逻辑回归" />
+              </Form.Item>
+              <Form.Item>
+                <Space>
+                  <Button type="primary" htmlType="submit" loading={loading} block>
+                    {loading ? '正在生成...' : '生成教学材料'}
+                  </Button>
+                  {result && (
+                    <Dropdown menu={{ items: exportItems }} placement="bottomRight">
+                      <Button icon={<DownloadOutlined />}>导出文档</Button>
+                    </Dropdown>
+                  )}
+                </Space>
+              </Form.Item>
+            </Form>
           </Card>
-          <Card title="教学大纲" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {result?.syllabus || '这里将显示生成的教学大纲...'}
-            </ReactMarkdown>
-          </Card>
-          <Card title="重点难点分析" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {result?.keyPoints || '这里将显示生成的重点难点分析...'}
-            </ReactMarkdown>
-          </Card>
-          <Card title="课后习题建议" bordered={true} style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }} headStyle={{ color: '#2E74B5' }}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {result?.exercises || '这里将显示生成的课后习题建议...'}
-            </ReactMarkdown>
-          </Card>
-          <Card
-            title="重点公式"
-            bordered={true}
-            style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)' }}
-            headStyle={{ color: '#2E74B5' }}
-            extra={
-              result?.keyFormulas && (
-                <Button
-                  icon={<CopyOutlined />}
-                  onClick={() => copyToClipboard(result.keyFormulas.join('\n'))}
-                >
-                  复制LaTeX
-                </Button>
-              )
-            }
-          >
-            {result?.keyFormulas ? (
-              <ul>
-                {result.keyFormulas.map((formula, index) => (
-                  <li key={index}>{`$$${formula}$$`}</li>
-                ))}
-              </ul>
-            ) : (
-              '这里将显示生成的重点公式...'
-            )}
-          </Card>
-        </Space>
-      </Spin>
+        </Col>
+        <Col xs={24} md={16}>
+          <Spin spinning={loading} tip="AI 正在努力生成中..." size="large" style={{ width: '100%' }}>
+            {error && <Alert message="生成出错" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              {renderResultCard("完整课程设计", <FileTextOutlined />, result?.fullCourseDesign, "这里将展示AI生成的完整课程设计方案，包括课程简介、目标、安排等。")}
+              {renderResultCard("教学大纲", <BookOutlined />, result?.syllabus, "这里将展示AI生成的详细章节教学大纲。")}
+              {renderResultCard("重点难点分析", <BulbOutlined />, result?.keyPoints, "这里将展示AI分析的课程重点与难点。")}
+              {renderResultCard("课后习题建议", <ExperimentOutlined />, result?.exercises, "这里将展示AI建议的相关课后练习题。")}
+              <Card title={<Space><CodeOutlined />重点公式</Space>} bordered={false} className="result-card" extra={
+                result?.keyFormulas && (
+                  <Button icon={<CopyOutlined />} onClick={() => copyToClipboard(result.keyFormulas.join('\n'))}>
+                    复制LaTeX
+                  </Button>
+                )
+              }>
+                {result?.keyFormulas ? (
+                  <ul>
+                    {result.keyFormulas.map((formula, index) => (
+                      <li key={index}>{`$$${formula}$$`}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="placeholder-content">
+                    <Text type="secondary">这里将展示AI提取的核心数学公式 (LaTeX格式)。</Text>
+                  </div>
+                )}
+              </Card>
+            </Space>
+          </Spin>
+        </Col>
+      </Row>
     </div>
   );
 };

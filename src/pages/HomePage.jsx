@@ -7,7 +7,8 @@ import {
   MessageOutlined, 
   ReadOutlined, 
   BookOutlined,
-  BulbOutlined
+  BulbOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import './HomePage.css';
 import defaultImage from '../assets/default.jpg';
@@ -78,6 +79,48 @@ const WelcomeHeader = () => {
   );
 };
 
+const tips = [
+  {
+    title: '善用“智能问答”',
+    content: '遇到任何课程难题，随时向“鲤工仔”提问，它会为你提供即时、详细的解答。',
+    icon: <MessageOutlined style={{ fontSize: '24px', color: '#faad14' }} />,
+  },
+  {
+    title: '定制你的学习路径',
+    content: '在“自学助手”中输入你的学习目标，AI会为你生成个性化的学习计划和资料。',
+    icon: <BulbOutlined style={{ fontSize: '24px', color: '#eb2f96' }} />,
+  },
+  {
+    title: '一键生成教学大纲',
+    content: '“课程设计”功能可以帮你快速构建课程框架，节省大量备课时间。',
+    icon: <EditOutlined style={{ fontSize: '24px', color: '#1890ff' }} />,
+  },
+];
+
+const TipsSection = () => (
+  <div className="tips-section">
+    <Title level={3} className="tips-title">
+      <InfoCircleOutlined style={{ marginRight: '12px' }} />
+      使用小贴士
+    </Title>
+    <Row gutter={[24, 24]}>
+      {tips.map((tip, index) => (
+        <Col xs={24} md={8} key={index}>
+          <Card className="tip-card">
+            <div className="tip-card-content">
+              {tip.icon}
+              <div className="tip-text">
+                <Title level={5} style={{ margin: '0 0 8px 0' }}>{tip.title}</Title>
+                <Paragraph style={{ margin: 0 }}>{tip.content}</Paragraph>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  </div>
+);
+
 const HomePage = () => {
   return (
     <div className="home-page-container">
@@ -101,6 +144,7 @@ const HomePage = () => {
           ))}
         </Row>
       </div>
+      <TipsSection />
     </div>
   );
 };
