@@ -1,26 +1,105 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Typography } from 'antd';
+import { Card, Row, Col, Typography, Avatar } from 'antd';
+import { 
+  EditOutlined, 
+  CheckSquareOutlined, 
+  MessageOutlined, 
+  ReadOutlined, 
+  BookOutlined,
+  BulbOutlined
+} from '@ant-design/icons';
 import './HomePage.css';
+import defaultImage from '../assets/default.jpg';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
+
+const features = [
+  {
+    title: '课程设计',
+    description: '快速生成教学大纲、重点难点和习题。',
+    icon: <EditOutlined style={{ fontSize: '32px', color: '#1890ff' }} />,
+    link: '/course-design',
+  },
+  {
+    title: '作业批改',
+    description: '上传作业，AI 辅助评分并提供评语。',
+    icon: <CheckSquareOutlined style={{ fontSize: '32px', color: '#52c41a' }} />,
+    link: '/grade-assignments',
+  },
+  {
+    title: '智能问答',
+    description: '与“鲤工仔”互动，解答您的课程疑问。',
+    icon: <MessageOutlined style={{ fontSize: '32px', color: '#faad14' }} />,
+    link: '/chatbot',
+  },
+  {
+    title: '题库中心',
+    description: '趣味与专业题库，检验您的学习成果。',
+    icon: <ReadOutlined style={{ fontSize: '32px', color: '#722ed1' }} />,
+    link: '/question-bank',
+  },
+  {
+    title: '自学助手',
+    description: '您的个性化学习伙伴，帮您预习和复习。',
+    icon: <BulbOutlined style={{ fontSize: '32px', color: '#eb2f96' }} />,
+    link: '/self-learning',
+  },
+  {
+    title: '入门指南',
+    description: '快速了解本系统的所有强大功能。',
+    icon: <BookOutlined style={{ fontSize: '32px', color: '#13c2c2' }} />,
+    link: '/guide',
+  },
+];
+
+const WelcomeHeader = () => {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 6) return "夜深了，注意休息哦！";
+    if (hour < 12) return "早上好，新的一天，元气满满！";
+    if (hour < 14) return "中午好，别忘了午休哦！";
+    if (hour < 18) return "下午好，继续加油！";
+    return "晚上好，今天收获如何？";
+  };
+
+  return (
+    <div className="welcome-header">
+      <Avatar size={88} src={defaultImage} className="welcome-avatar" />
+      <div>
+        <Title level={2} style={{ margin: 0, color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.4)' }}>
+          {getGreeting()}
+        </Title>
+        <Paragraph style={{ margin: '8px 0 0', color: 'rgba(255, 255, 255, 0.85)', fontSize: '16px' }}>
+          欢迎使用「知书达鲤」，我是您的专属AI助教“鲤工仔”。
+        </Paragraph>
+      </div>
+    </div>
+  );
+};
 
 const HomePage = () => {
   return (
-    <div className="home-page">
-      <div className="home-content">
-        <Title level={2}>欢迎使用 AI 助教系统</Title>
-        <Paragraph>
-          本系统旨在利用人工智能技术，辅助教师进行课程设计、作业批改，并为学生提供智能化的学习工具。
-        </Paragraph>
-        <Card title="快速开始：系统使用指南" style={{ marginTop: '20px' }}>
-          <Paragraph>
-            为了帮助您快速上手，我们准备了一份详细的系统使用指南。
-          </Paragraph>
-          <Link to="/guide">
-            <button className="guide-button">阅读指南</button>
-          </Link>
-        </Card>
+    <div className="home-page-container">
+      <WelcomeHeader />
+      <div className="features-grid">
+        <Row gutter={[24, 24]}>
+          {features.map((feature, index) => (
+            <Col xs={24} sm={12} md={8} key={index}>
+              <Link to={feature.link}>
+                <Card hoverable className="feature-card">
+                  <div className="feature-card-content">
+                    {feature.icon}
+                    <div className="feature-text">
+                      <Title level={5} style={{ margin: 0 }}>{feature.title}</Title>
+                      <Text type="secondary">{feature.description}</Text>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </Col>
+          ))}
+        </Row>
       </div>
     </div>
   );
