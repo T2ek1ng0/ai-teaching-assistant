@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Layout, ConfigProvider } from 'antd';
 
@@ -18,6 +18,13 @@ import QuestionBank from './pages/QuestionBank/QuestionBank';
 const { Content, Footer } = Layout;
 
 const App = () => {
+  useEffect(() => {
+    document.body.classList.add('app-background');
+    return () => {
+      document.body.classList.remove('app-background');
+    };
+  }, []);
+
   return (
     <ConfigProvider
       theme={{
@@ -27,21 +34,17 @@ const App = () => {
       }}
     >
       <Router basename="/ai-teaching-assistant">
-        <Layout style={{
-          minHeight: '100vh',
-          backgroundImage: 'url(/background.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
-        }}>
+        <Layout style={{ minHeight: '100vh', background: 'transparent' }}>
           <NavBar />
-          <Content style={{ padding: '24px', background: 'transparent' }}>
+          <Content style={{ padding: '24px' }}>
             <div style={{
-              background: 'rgba(255, 255, 255, 0.92)',
+              background: 'rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               padding: 24,
               minHeight: 'calc(100vh - 134px)',
-              borderRadius: '12px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
             }}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
