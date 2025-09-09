@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Input, Button, Typography, Avatar, Spin, Card } from 'antd';
-import { UserOutlined, SendOutlined } from '@ant-design/icons';
+import { Input, Button, Typography, Avatar, Spin, Card, Tooltip, message } from 'antd';
+import { UserOutlined, SendOutlined, SaveOutlined } from '@ant-design/icons';
 import defaultImage from '../assets/default.jpg';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -36,6 +36,40 @@ const Chatbot = () => {
       console.error("Failed to save chat history to localStorage", error);
     }
   }, [messages]);
+
+  const handleSaveMemory = async (question, answer) => {
+    const loadingMsg = message.loading('正在保存记忆...', 0);
+    
+    try {
+      // 检查是否已存在相同的问题
+      const { data: existing, error: checkError } = await supabase
+        .from('memories')
+        .select('id')
+        .eq('question', question)
+        .limit(1);
+
+      if (checkError) throw checkError;
+
+      if (existing && existing.length > 0) {
+        message.info('这条问答已经记住啦，无需重复保存。');
+        return;
+      }
+
+      // 插入新的记忆
+      const { error: insertError } = await supabase
+        .from('memories')
+        .insert([{ question, answer }]);
+
+      if (insertError) throw insertError;
+
+      message.success('已成功记住该问答！');
+    } catch (error) {
+      console.error('Error saving memory:', error);
+      message.error(`保存失败: ${error.message}`);
+    } finally {
+      loadingMsg(); // 关闭加载提示
+    }
+  };
 
   const handleSendMessage = async () => {
     if (inputValue.trim() && !loading) {
@@ -91,22 +125,40 @@ const Chatbot = () => {
         <div className="header-text">
           <Title level={3} style={{ margin: 0 }}>知书达鲤 - 智能问答机器人</Title>
           <Paragraph style={{ margin: 0, marginTop: 8 }}>
-            在这里，您可以就课程内容进行提问，“鲤工仔”将结合知识库为您实时解答，成为您 24/7 的学习伙伴。
+            在这里，您可以就课程内容进行提问，“鲤工仔”将结合知识库为您实时解答。您可以点击机器人回答旁的“保存”按钮，让它记住重要的问答。
           </Paragraph>
         </div>
       </div>
 
       <Card bordered={false} className="chat-card">
         <div className="message-list">
-          {messages.map((item, index) => (
-            <div key={index} className={`message-item ${item.sender}`}>
-              {item.sender === 'bot' && <Avatar className="message-avatar" src={defaultImage} />}
-              <div className="message-bubble">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.text}</ReactMarkdown>
+          {messages.map((item, index) => {
+            const isBotMessage = item.sender === 'bot';
+            const prevMessage = index > 0 ? messages[index - 1] : null;
+            const canSave = isBotMessage && prevMessage && prevMessage.sender === 'user';
+
+            return (
+              <div key={index} className={`message-item ${item.sender}`}>
+                {isBotMessage && <Avatar className="message-avatar" src={defaultImage} />}
+                <div className="message-content">
+                  <div className="message-bubble">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.text}</ReactMarkdown>
+                  </div>
+                  {canSave && (
+                    <Tooltip title="记住这次问答">
+                      <Button 
+                        className="save-memory-btn"
+                        type="text" 
+                        icon={<SaveOutlined />} 
+                        onClick={() => handleSaveMemory(prevMessage.text, item.text)}
+                      />
+                    </Tooltip>
+                  )}
+                </div>
+                {!isBotMessage && <Avatar className="message-avatar" icon={<UserOutlined />} />}
               </div>
-              {item.sender === 'user' && <Avatar className="message-avatar" icon={<UserOutlined />} />}
-            </div>
-          ))}
+            );
+          })}
           {loading && (
             <div className="message-item bot">
               <Avatar className="message-avatar" src={defaultImage} />
