@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown } from 'antd';
+import { Form, Input, Button, Card, Typography, Space, Spin, message, Alert, Dropdown, Avatar } from 'antd';
 import { DownloadOutlined, FileWordOutlined, FileMarkdownOutlined, CopyOutlined } from '@ant-design/icons';
 import { saveAs } from 'file-saver';
 import { marked } from 'marked';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
+import defaultImage from '../assets/default.jpg';
 
 const { Title, Paragraph } = Typography;
 
@@ -277,8 +278,13 @@ const CourseDesignAssistant = () => {
 
   return (
     <div>
-      <Title level={4}>课程设计助手</Title>
-      <Paragraph>请输入课程主题和关键词，AI将为您生成教学大纲、重点难点分析和课后习题建议。</Paragraph>
+      <Space align="center" size="large" style={{ marginBottom: 24, display: 'flex' }}>
+        <Avatar size={80} src={defaultImage} />
+        <div>
+          <Title level={4} style={{ margin: 0 }}>知书达鲤 - 课程设计助手</Title>
+          <Paragraph style={{ margin: 0, marginTop: 4 }}>请输入课程主题和关键词，“鲤工仔”将为您生成教学大纲、重点难点分析和课后习题建议。</Paragraph>
+        </div>
+      </Space>
       
       <Form onFinish={onFinish} layout="vertical">
         <Form.Item

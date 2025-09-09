@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Upload, Button, Card, Typography, message, Spin, Space, Alert } from 'antd';
+import { Upload, Button, Card, Typography, message, Spin, Space, Alert, Avatar } from 'antd';
 import { UploadOutlined, RedoOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import mammoth from 'mammoth';
 import { callLLM } from '../utils/llm';
+import defaultImage from '../assets/default.jpg';
 
 const { Title, Paragraph } = Typography;
 
@@ -130,8 +131,13 @@ const AssignmentGrader = () => {
 
   return (
     <div>
-      <Title level={4}>作业智能批改</Title>
-      <Paragraph>请上传学生作业文件（如 .docx, .txt, .md），AI 将根据作业内容进行初步评分和给出评语。</Paragraph>
+      <Space align="center" size="large" style={{ marginBottom: 24, display: 'flex' }}>
+        <Avatar size={80} src={defaultImage} />
+        <div>
+          <Title level={4} style={{ margin: 0 }}>知书达鲤 - 作业智能批改</Title>
+          <Paragraph style={{ margin: 0, marginTop: 4 }}>请上传学生作业文件（如 .docx, .txt, .md），“鲤工仔”将为您进行初步评分和给出评语。</Paragraph>
+        </div>
+      </Space>
       
       {error && <Alert message="错误" description={error} type="error" showIcon style={{ marginBottom: 24 }} />}
 
