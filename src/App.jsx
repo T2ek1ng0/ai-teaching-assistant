@@ -27,10 +27,22 @@ const App = () => {
       }}
     >
       <Router basename="/ai-teaching-assistant">
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{
+          minHeight: '100vh',
+          backgroundImage: 'url(/background.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}>
           <NavBar />
-          <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-            <div style={{ background: '#fff', padding: 24, minHeight: 'calc(100vh - 134px)' }}>
+          <Content style={{ padding: '24px', background: 'transparent' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.92)',
+              padding: 24,
+              minHeight: 'calc(100vh - 134px)',
+              borderRadius: '12px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+            }}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/guide" element={<Guide />} />
@@ -47,8 +59,8 @@ const App = () => {
             </div>
           </Content>
           <FloatingBot />
-          <Footer style={{ textAlign: 'center' }}>
-            AI Teaching Assistant ©2024 Created by CodeBuddy
+          <Footer style={{ textAlign: 'center', color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.6)' }}>
+            知书达鲤 ©2024 Created by CodeBuddy
           </Footer>
         </Layout>
       </Router>

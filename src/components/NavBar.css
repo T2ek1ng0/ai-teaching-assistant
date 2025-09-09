@@ -14,8 +14,10 @@
 }
 
 .logo-img {
-  height: 48px;
+  height: 52px;
   margin-right: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
 }
 
 .logo a {
@@ -31,6 +33,17 @@
   gap: 40px;
   background-color: transparent;
   border-bottom: none;
+}
+
+.nav-menu .nav-item {
+  color: #fff;
+  font-size: 18px;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.nav-menu .nav-item:hover {
+  opacity: 0.8;
 }
 
 .nav-menu .ant-dropdown-link {

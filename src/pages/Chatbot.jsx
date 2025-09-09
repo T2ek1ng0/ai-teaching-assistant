@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input, Button, Typography, Avatar, Spin } from 'antd';
-import { UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
+import defaultImage from '../assets/default.jpg';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { callLLM } from '../utils/llm';
@@ -14,10 +15,10 @@ const Chatbot = () => {
   const [messages, setMessages] = useState(() => {
     try {
       const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
-      return savedMessages ? JSON.parse(savedMessages) : [{ sender: 'bot', text: '您好！我是您的智能助教，有什么可以帮助您的吗？' }];
+      return savedMessages ? JSON.parse(savedMessages) : [{ sender: 'bot', text: '您好！我是知书达鲤，您的学习小助手，有什么可以帮助您的吗？' }];
     } catch (error) {
       console.error("Failed to parse chat history from localStorage", error);
-      return [{ sender: 'bot', text: '您好！我是您的智能助教，有什么可以帮助您的吗？' }];
+      return [{ sender: 'bot', text: '您好！我是知书达鲤，您的学习小助手，有什么可以帮助您的吗？' }];
     }
   });
   const [inputValue, setInputValue] = useState('');
@@ -88,13 +89,13 @@ const Chatbot = () => {
 
   return (
     <div>
-      <Title level={4}>智能答疑机器人</Title>
-      <Paragraph>在这里，您可以就课程内容进行提问，AI助教将为您实时解答。</Paragraph>
+      <Title level={4}>知书达鲤 - 智能问答</Title>
+      <Paragraph>在这里，您可以就课程内容进行提问，“鲤工仔”将为您实时解答。</Paragraph>
       <div style={{ height: '450px', display: 'flex', flexDirection: 'column', border: '1px solid #f0f0f0', background: '#fafafa' }}>
         <div className="message-list" style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           {messages.map((item, index) => (
             <div key={index} className={`message-item ${item.sender}`}>
-              {item.sender === 'bot' && <Avatar className="message-avatar" style={{ backgroundColor: '#005A9C' }} icon={<RobotOutlined />} />}
+              {item.sender === 'bot' && <Avatar className="message-avatar" src={defaultImage} />}
               <div className="message-bubble">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.text}</ReactMarkdown>
               </div>
@@ -103,7 +104,7 @@ const Chatbot = () => {
           ))}
           {loading && (
             <div className="message-item bot">
-              <Avatar className="message-avatar" style={{ backgroundColor: '#005A9C' }} icon={<RobotOutlined />} />
+              <Avatar className="message-avatar" src={defaultImage} />
               <div className="message-bubble">
                 <Spin size="small" /> 正在思考中...
               </div>

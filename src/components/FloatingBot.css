@@ -4,11 +4,45 @@
   right: 30px;
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   cursor: move;
 }
 
-.close-button {
+.bot-icon-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #005A9C;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  cursor: pointer;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.bot-icon-container.minimized-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.bot-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.control-button {
   margin-left: 8px;
   background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e8e8e8;
 }

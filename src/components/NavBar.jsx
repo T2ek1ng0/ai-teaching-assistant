@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import './NavBar.css';
-import logo from '/favicon.png';
+import logo from '/default.jpg';
 
 const teacherMenuItems = [
   { key: '1', label: <Link to="/course-design">课程设计</Link> },
@@ -38,9 +38,10 @@ const NavBar = () => {
     <div className="navbar">
       <div className="logo">
         <img src={logo} alt="logo" className="logo-img" />
-        <Link to="/">AI 助教</Link>
+        <Link to="/">知书达鲤</Link>
       </div>
       <div className="nav-menu">
+        <Link to="/" className="nav-item">首页</Link>
         <Dropdown menu={{ items: teacherMenuItems }} onOpenChange={(open) => handleOpenChange('teacher', open)}>
           <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
             教师专栏 <DownOutlined className={getArrowClass('teacher')} />
