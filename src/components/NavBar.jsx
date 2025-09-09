@@ -11,10 +11,8 @@ const teacherMenuItems = [
 ];
 
 const studentMenuItems = [
-  { key: '1', label: <Link to="/course-preview">课程预习</Link> },
-  { key: '2', label: <Link to="/self-learning">自学助手</Link> },
-  { key: '3', label: <Link to="/chatbot">智能答疑机器人</Link> },
-  { key: '4', label: <Link to="/question-bank">题库中心</Link> },
+  { key: '1', label: <Link to="/self-learning">课程预习与自学</Link> },
+  { key: '2', label: <Link to="/chatbot">智能答疑机器人</Link> },
 ];
 
 const settingsMenuItems = [
@@ -52,6 +50,7 @@ const NavBar = () => {
             学生必备 <DownOutlined className={getArrowClass('student')} />
           </a>
         </Dropdown>
+        <Link to="/question-bank" className="nav-item">题库中心</Link>
         <Dropdown menu={{ items: settingsMenuItems }} onOpenChange={(open) => handleOpenChange('settings', open)}>
           <a className="ant-dropdown-link" onClick={e => e.preventDefault()}>
             设置 <DownOutlined className={getArrowClass('settings')} />
